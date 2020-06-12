@@ -3,6 +3,8 @@
 from Crypto.Cipher import AES
 from Crypto.Random import get_random_bytes
 import string
+import random
+import math
 
 # Converts an integer list to a single string
 def convertIntLstToString(lst):
@@ -53,17 +55,36 @@ def encryptData(data):
       iv = encryptMessage
    return totalEncrypt
 
+def findB(p, g):
+   b = 11
+   A = pow(g, b, p)
+   return A
+
+def findA(p, g):
+   a = 7
+   A = pow(g, a, p)
+   return A
 
 def main():
-   p =
-   g =
+   p = 37
+   g = 5
+
+
+   A = findA(p,g)
+   B = findB(p,g)
+
+   sa = findA(p,B)
+   sb = findB(p,A)
+
+   print(sa)
+   print(sb)
 
    # Padding the string
-   data = pad(data)
-
-   # Encryption of the string
-   encrypt = encryptData(data)
-   cp.write(encrypt)
-
+#   data = pad(data)
+#
+#   # Encryption of the string
+#   encrypt = encryptData(data)
+#   cp.write(encrypt)
+#
 if __name__== "__main__":
    main()
