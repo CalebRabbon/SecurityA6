@@ -91,17 +91,17 @@ def findA(p, g):
 def truncate(val):
    return val[0:16]
 
-def main():
+def malloryInterceptA_B(p,g):
    iv = get_random_bytes(16)
-   pstr = "B10B8F96A080E01DDE92DE5EAE5D54EC52C99FBCFB06A3C69A6A9DCA52D23B616073E28675A23D189838EF1E2EE652C013ECB4AEA906112324975C3CD49B83BFACCBDD7D90C4BD7098488E9C219A73724EFFD6FAE5644738FAA31A4FF55BCCC0A151AF5F0DC8B4BD45BF37DF365C1A65E68CFDA76D4DA708DF1FB2BC2E4A4371"
-
-   gstr = "A4D1CBD5C3FD34126765A442EFB99905F8104DD258AC507FD6406CFF14266D31266FEA1E5C41564B777E690F5504F213160217B4B01B886A5E91547F9E2749F4D7FBD7D3B9A92EE1909D0D2263F80A76A6A24C087A091F531DBF0A0169B6A28AD662A4D18E73AFA32D779D5918D08BC8858F4DCEF97C2A24855E6EEB22B3B2E5"
-
-   p = int(pstr, 16)
-   g = int(gstr, 16)
-
    A = findA(p,g)
    B = findB(p,g)
+
+   # Mallory Modifies A->p and B->p
+   A = p
+   B = p
+   # Mallory knows the key = 0
+   shaMa =(findSHA256(str(0)))
+   malKey = (truncate(shaMa))
 
    sa = findA(p,B)
    sb = findB(p,A)
@@ -118,19 +118,107 @@ def main():
    # Encryption of the string from Alice
    encrypt = encryptData(data, ka, iv)
 
+   # Mallory intercepting the message
+   decrypt = decryptData(encrypt, malKey, iv)
+   print("Intercepted message by Mallory")
+   print(decrypt)
+
    # Bob's decryption of the string from Alice
    decrypt = decryptData(encrypt, kb, iv)
+   print("Message received by Bob")
    print(decrypt)
+
+def malloryInterceptG(p,g):
+   iv = get_random_bytes(16)
+   A = findA(p,g)
+   B = findB(p,g)
+
+   # Mallory knows the key = 1 for 1 % (num != 1)
+   shaMa =(findSHA256(str(1)))
+   malKey = (truncate(shaMa))
+
+   sa = findA(p,B)
+   sb = findB(p,A)
+
+   shasa = (findSHA256(str(sa)))
+   shasb = (findSHA256(str(sb)))
+
+   ka = (truncate(shasa))
+   kb = (truncate(shasb))
 
    # Padding the string
-   data = pad("Hi Alice!")
+   data = pad("Hi Bob!")
 
-   # Encryption of the string from Bob
+   # Encryption of the string from Alice
    encrypt = encryptData(data, ka, iv)
 
-   # Alice's decryption of the string from Bob
-   decrypt = decryptData(encrypt, kb, iv)
+   # Mallory intercepting the message
+   decrypt = decryptData(encrypt, malKey, iv)
+   print("Intercepted message by Mallory")
    print(decrypt)
+
+   # Bob's decryption of the string from Alice
+   decrypt = decryptData(encrypt, kb, iv)
+   print("Message received by Bob")
+   print(decrypt)
+
+def malloryInterceptP_1(p,g):
+   iv = get_random_bytes(16)
+   A = findA(p,g)
+   B = findB(p,g)
+
+   # Mallory knows the key = p - 1 from alegbra
+   shaMa =(findSHA256(str(p - 1)))
+   malKey = (truncate(shaMa))
+
+   sa = findA(p,B)
+   sb = findB(p,A)
+
+   shasa = (findSHA256(str(sa)))
+   shasb = (findSHA256(str(sb)))
+
+   ka = (truncate(shasa))
+   kb = (truncate(shasb))
+
+   # Padding the string
+   data = pad("Hi Bob!")
+
+   # Encryption of the string from Alice
+   encrypt = encryptData(data, ka, iv)
+
+   # Mallory intercepting the message
+   decrypt = decryptData(encrypt, malKey, iv)
+   print("Intercepted message by Mallory")
+   print(decrypt)
+
+   # Bob's decryption of the string from Alice
+   decrypt = decryptData(encrypt, kb, iv)
+   print("Message received by Bob")
+   print(decrypt)
+
+
+def main():
+   pstr = "B10B8F96A080E01DDE92DE5EAE5D54EC52C99FBCFB06A3C69A6A9DCA52D23B616073E28675A23D189838EF1E2EE652C013ECB4AEA906112324975C3CD49B83BFACCBDD7D90C4BD7098488E9C219A73724EFFD6FAE5644738FAA31A4FF55BCCC0A151AF5F0DC8B4BD45BF37DF365C1A65E68CFDA76D4DA708DF1FB2BC2E4A4371"
+
+   gstr = "A4D1CBD5C3FD34126765A442EFB99905F8104DD258AC507FD6406CFF14266D31266FEA1E5C41564B777E690F5504F213160217B4B01B886A5E91547F9E2749F4D7FBD7D3B9A92EE1909D0D2263F80A76A6A24C087A091F531DBF0A0169B6A28AD662A4D18E73AFA32D779D5918D08BC8858F4DCEF97C2A24855E6EEB22B3B2E5"
+
+   p = int(pstr, 16)
+   g = int(gstr, 16)
+
+   print("Mallory Changing A = p, B = p")
+   malloryInterceptA_B(p,g)
+
+   g = 1
+   print("Mallory Changing g = 1")
+   malloryInterceptG(p,g)
+
+   g = p
+   print("Mallory Changing g = p")
+   malloryInterceptA_B(p,g)
+
+   g = p - 1
+   print("Mallory Changing g = p - 1")
+   malloryInterceptP_1(p,g)
 
 if __name__== "__main__":
    main()
